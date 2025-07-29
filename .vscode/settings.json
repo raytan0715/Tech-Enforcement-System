@@ -1,0 +1,4 @@
+{
+  "cSpell.words": ["pytesseract"],
+  "python.analysis.extraPaths": ["./models/yolov5"]
+}

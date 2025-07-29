@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>違規紀錄查詢系統</title>
+    <link rel="stylesheet" href="/static/css/search.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>違規紀錄查詢系統</h1>
+        <form id="query-form" method="POST">
+            <div class="form-group">
+                <label for="id-card">身分證字號</label>
+                <input type="text" id="id-card" name="id-card" required class="input-field">
+            </div>
+            <div class="form-group">
+                <label for="birthdate">出生年月日</label>
+                <input type="date" id="birthdate" name="birthdate" required class="input-field">
+            </div>
+            <div class="form-group">
+                <label for="captcha">驗證碼</label>
+                <div class="captcha-container">
+                    <input type="text" id="captcha" name="captcha" required class="input-field">
+                    <span id="captcha-display" class="captcha-display"></span>
+                    <button type="button" id="refresh-captcha" class="btn">重新產生驗證碼</button>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn">查詢</button>
+            </div>
+            
+        </form>
+        <div id="query-result" style="display: none;">
+            <h2>您的違規紀錄</h2>
+            <table id="violations-table" class="table">
+                <thead>
+                    <tr>
+                        <th>罰單編號</th>
+                        <th>車牌號碼</th>
+                        <th>違規地點</th>
+                        <th>限速</th>
+                        <th>當前速度</th>
+                        <th>違規時間</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 查詢結果將顯示在這裡 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let generatedCaptcha = '';
+
+        function generateCaptcha() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let captcha = '';
+            for (let i = 0; i < 6; i++) {
+                captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            generatedCaptcha = captcha;
+            document.getElementById('captcha-display').textContent = captcha;
+        }
+
+        document.getElementById('refresh-captcha').addEventListener('click', generateCaptcha);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            generateCaptcha();
+        });
+
+        document.getElementById('query-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const idCard = document.getElementById('id-card').value;
+            const birthdate = document.getElementById('birthdate').value;
+            const captcha = document.getElementById('captcha').value;
+
+            if (captcha !== generatedCaptcha) {
+                alert('驗證碼錯誤，請重新輸入！');
+                generateCaptcha();
+                return;
+            }
+
+            fetch('/api/query_violations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idCard, birthdate, captcha })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayViolations(data.violations);
+                    } else {
+                        alert('查無違規紀錄！');
+                    }
+                })
+                .catch(error => {
+                    console.error('查詢失敗:', error);
+                    alert('查詢發生錯誤，請稍後再試。');
+                });
+        });
+
+
+        function displayViolations(violations) {
+            const resultSection = document.getElementById('query-result');
+            const tableBody = document.querySelector('#violations-table tbody');
+            tableBody.innerHTML = '';  // 清空之前的結果
+
+            violations.forEach(violation => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${violation.ticket_id}</td>
+                    <td>${violation.license_plate}</td>
+                    <td>${violation.violation_location}</td>
+                    <td>${violation.speed_limit}</td>
+                    <td>${violation.actual_speed}</td>
+                    <td>${violation.violation_time}</td>
+                `;
+                tableBody.appendChild(row);  // 將新行添加到表格中
+            });
+
+            resultSection.style.display = 'block';  // 顯示查詢結果區域
+        }
+
+    </script>
+</body>
+
+</html>

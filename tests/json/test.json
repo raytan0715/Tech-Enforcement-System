@@ -1,0 +1,9 @@
+{
+    "cam_id": "12345",
+    "speed_limit": 60,
+    "current_speed": 80,
+    "licence_plate": "ABC-123",
+    "location": "Street 1",
+    "date_time": "2024-12-22 20:00:00",
+    "image": "C:\traffic_enforcement\tests\pic\IMG_7545.png"
+}

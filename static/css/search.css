@@ -1,0 +1,187 @@
+/* 基本樣式 */
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #2c3e50, #34495e); /* 深藍色背景漸變 */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ecf0f1;
+}
+
+/* 容器樣式 */
+.container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    width: 1000px;
+    animation: fadeIn 0.8s ease-in-out;
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+/* 漸變進入效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 標題 */
+h1 {
+    text-align: center;
+    font-size: 28px;
+    color: #2c3e50; /* 深藍色 */
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+h2 {
+        color: #2c3e50; /* 深藍色 */
+   }
+
+/* 表單元素標籤 */
+label {
+    font-size: 16px;
+    color: #7f8c8d; /* 灰色 */
+    margin-bottom: 8px;
+    display: block;
+    font-weight: 500;
+}
+
+/* 輸入框樣式 */
+.input-field {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    border: 1px solid #bdc3c7; /* 淺灰色邊框 */
+    border-radius: 6px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* 輸入框獲得焦點時 */
+.input-field:focus {
+    border-color: #16a085; /* 穩重的綠色 */
+    box-shadow: 0 0 5px rgba(22, 160, 133, 0.5);
+    outline: none;
+}
+
+/* 驗證碼容器 */
+.captcha-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.captcha-display {
+    font-size: 20px;
+    font-weight: bold;
+    color: #34495e; /* 深灰色 */
+    padding: 6px 10px;
+    background-color: #ecf0f1; /* 淺灰背景 */
+    border: 1px solid #bdc3c7;
+    border-radius: 6px;
+}
+
+/* 按鈕置中 */
+.btn-group {
+    display: flex;
+    justify-content: center; /* 水平置中 */
+    margin-top: 20px;
+}
+
+
+/* 按鈕樣式 */
+.btn {
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #16a085, #1abc9c); /* 漸變綠色 */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 200px;
+}
+
+.btn:hover {
+    background: linear-gradient(135deg, #1abc9c, #2ecc71); /* 更明亮的綠色 */
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    background: linear-gradient(135deg, #16a085, #1abc9c);
+    transform: translateY(0);
+}
+
+/* 查詢結果容器置中 */
+#query-result {
+    display: none;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    width: 900px;
+    margin: 20px auto; /* 置中 */
+    text-align: center;
+}
+
+/* 查詢結果表格樣式 */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: black;
+}
+
+.table th,
+.table td {
+    padding: 16px; /* 增加內距 */
+    text-align: center;
+    border-bottom: 1px solid #bdc3c7;
+}
+
+.table th {
+    background-color: #2c3e50; /* 深藍色 */
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f8f9fa; /* 更淺的灰色 */
+}
+
+.table tr:hover {
+    background-color: #dff9fb; /* 增加行懸浮效果 */
+    cursor: pointer; /* 鼠標變為手型 */
+}
+
+/* 手機友好調整 */
+@media (max-width: 600px) {
+    .table th,
+    .table td {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+}
+
+

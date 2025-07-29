@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工辨識系統</title>
+    <link rel="stylesheet" href="/static/css/manual.css">
+</head>
+
+<body>
+    <header>
+        <h1>人工辨識系統</h1>
+        <div class="logout-button">
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button class="logout-btn" type="submit">登出</button>
+            </form>
+        </div>
+    </header>
+
+    <nav>
+        <button onclick="showView('overview')" class="active">總覽</button>
+        <button class="processed" onclick="showView('processed')">已處理</button>
+        <button class="pending" onclick="showView('pending')">未處理</button>
+        <button onclick="showView('history')">編輯紀錄</button>
+    </nav>
+
+    <div class="content-area">
+        <!-- 總覽表格 -->
+        <table id="overview-table">
+            <thead>
+                <tr>
+                    <th>違規事件編號</th>
+                    <th>車牌</th>
+                    <th>位置</th>
+                    <th>限速</th>
+                    <th>當前速度</th>
+                    <th>日期與時間</th>
+                    <th>照片</th>
+                    <th>處理狀態</th> <!-- 新增的欄位 -->
+                    <th>操作</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <!-- 資料將由 JavaScript 填充 -->
+            </tbody>
+        </table>
+
+        <!-- 已處理表格 -->
+
+        <table id="processed-table">
+            <thead>
+                <tr>
+                    <th>違規事件編號</th>
+                    <th>車牌</th>
+                    <th>位置</th>
+                    <th>限速</th>
+                    <th>當前速度</th>
+                    <th>日期與時間</th>
+                    <th>照片</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 資料將由 JavaScript 填充 -->
+            </tbody>
+        </table>
+
+
+
+        <!-- 未處理表格 -->
+        <table id="pending-table">
+            <thead>
+                <tr>
+                    <th>違規事件編號</th>
+                    <th>車牌</th>
+                    <th>位置</th>
+                    <th>限速</th>
+                    <th>當前速度</th>
+                    <th>日期與時間</th>
+                    <th>照片</th>
+                    <th>錯誤資訊</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 資料將由 JavaScript 填充 -->
+            </tbody>
+
+        </table>
+
+        <table id="history-table">
+            <thead>
+                <tr>
+                    <th>違規事件編號</th>
+                    <th>佐理員id</th>
+                    <th>ip位置</th>
+                    <th>更新車牌號碼</th>
+                    <th>處理時間</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 資料將由 JavaScript 填充 -->
+            </tbody>
+
+        </table>
+
+
+
+        <!-- 詳細資料檢視/編輯區域 -->
+        <main id="detail-view" style="display: none;">
+            <div class="photo">
+            </div>
+            <table id="violations-table">
+                <tbody>
+                    <tr>
+                        <th>車牌號碼</th>
+                        <td class="license-data"></td>
+                    </tr>
+                    <tr>
+                        <th>位置</th>
+                        <td class="addr-data"></td>
+                    </tr>
+                    <tr>
+                        <th>限速</th>
+                        <td class="speed-data"></td>
+                    </tr>
+                    <tr>
+                        <th>當前速度</th>
+                        <td class="current-speed-data"></td>
+                    </tr>
+                    <tr>
+                        <th>日期與時間</th>
+                        <td class="time-data"></td>
+                    </tr>
+
+                    <tr>
+                        <th>修改車牌</th>
+                        <td>
+                            <input type="text" id="license-input" placeholder="輸入新車牌號碼">
+                            <button onclick="updateLicensePlate()">提交</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>操作</th>
+                        <td>
+                            <button class="back-btn" onclick="backToList()">取消</button>
+                            <button class="unrecognizable-btn">無法辨識</button>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <script>
+        const assistantId = "{{ user_id }}"
+        let currentView = 'overview';
+        let violations = [];  // 儲存所有違規資料
+
+        // 頁面載入時自動執行
+        document.addEventListener('DOMContentLoaded', function () {
+            // 確保總覽按鈕處於激活狀態
+            document.querySelector('button[onclick="showView(\'overview\')"]').classList.add('active');
+
+            // 設置正確的顯示狀態
+            document.getElementById('overview-table').style.display = 'table';
+            document.getElementById('processed-table').style.display = 'none';
+            document.getElementById('pending-table').style.display = 'none';
+            document.getElementById('history-table').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'none';
+            // 載入總覽資料
+            loadOverviewData();
+        });
+
+        // 切換視圖
+        function showView(view) {
+            currentView = view;
+            // 更新按鈕狀態
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 隱藏所有視圖
+            document.getElementById('overview-table').style.display = 'none';
+            document.getElementById('processed-table').style.display = 'none';
+            document.getElementById('pending-table').style.display = 'none';
+            document.getElementById('history-table').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'none';
+
+            // 顯示選擇的視圖
+            if (view === 'overview') {
+                document.getElementById('overview-table').style.display = 'table';
+                loadOverviewData();
+            } else if (view === 'processed') {
+                document.getElementById('processed-table').style.display = 'table';
+                loadProcessedData();
+            } else if (view === 'pending') {
+                document.getElementById('pending-table').style.display = 'table';
+                loadPendingData();
+            } else if (view === 'history') {
+                document.getElementById('history-table').style.display = 'table';
+                loadHistoryData();
+            }
+        }
+
+        function loadOverviewData() {
+            fetch('/api/manual')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    violations = data;
+                    const tbody = document.querySelector('#overview-table tbody');
+                    tbody.innerHTML = '';
+
+                    data.forEach(violation => {
+                        let errorMessage = '';
+                        let status = violation.recognition ? '已處理' : '未處理';  // 顯示處理狀態
+
+                        // 根據處理狀態設置背景顏色
+                        let rowClass = violation.recognition ? 'processed-row' : 'pending-row';
+
+                        // 處理錯誤資訊
+                        if (violation.error_code === 1) {
+                            errorMessage = '車牌不存在';
+                        } else if (violation.error_code === 2) {
+                            errorMessage = '車牌已註銷';
+                        } else if (violation.error_code === 3) {
+                            errorMessage = '多車牌';
+                        }
+
+                        const row = document.createElement('tr');
+                        row.classList.add(rowClass);  // 設定該列的背景顏色
+
+                        row.innerHTML = `
+                    <td>${violation.id}</td>
+                    <td>${violation.license_plate}</td>
+                    <td>${violation.location}</td>
+                    <td>${violation.speed_limit}</td>
+                    <td>${violation.current_speed}</td>
+                    <td>${violation.date_time}</td>
+                    <td><img src="${violation.image}" alt="Violation Image" width="100" height="100"></td>
+                    <td>${status}</td> <!-- 顯示處理狀態 -->
+                    <td>
+                        <button class="edit-btn" onclick="showViolationDetail(${violation.id})">編輯</button>
+                    </td>
+                `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+
+        // 載入已處理資料
+        function loadProcessedData() {
+            fetch('/api/manual')
+                .then(response => response.json())
+                .then(data => {
+                    const processedViolations = data.filter(v => v.recognition);
+                    updateTableData('processed-table', processedViolations);
+                });
+        }
+
+        // 載入未處理資料
+        function loadPendingData() {
+            fetch('/api/manual')
+                .then(response => response.json())
+                .then(data => {
+                    const pendingViolations = data.filter(v => !v.recognition);
+                    updateTableData('pending-table', pendingViolations);
+                });
+        }
+
+        function loadHistoryData() {
+            fetch('/api/fines')
+                .then(response => response.json()) // 將回應轉換為 JSON
+                .then(data => {
+                    // 呼叫函式將資料插入到表格
+                    populateHistoryTable(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching history data:', error);
+                });
+        }
+
+        function populateHistoryTable(data) {
+            const tableBody = document.querySelector('#history-table tbody');
+            tableBody.innerHTML = ''; // 清空現有的表格內容
+
+            // 遍歷資料並生成表格列
+            data.forEach(record => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${record.id}</td>
+                    <td>${record.employee_id}</td>
+                    <td>${record.ip_address}</td>
+                    <td>${record.license_plate}</td>
+                    <td>${record.timestamp}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // 確保 DOM 渲染後再進行處理
+            updateTableData('processed-table', violations);
+        });
+
+        // 更新表格資料的函式
+        function updateTableData(tableId, violations) {
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            tbody.innerHTML = '';
+
+            violations.forEach(violation => {
+                let errorMessage = '';
+                if (tableId !== 'processed-table') {  // 如果不是已處理表格才顯示錯誤資訊
+                    if (violation.error_code === 1) {
+                        errorMessage = '車牌不存在';
+                    } else if (violation.error_code === 2) {
+                        errorMessage = '車牌已註銷';
+                    } else if (violation.error_code === 3) {
+                        errorMessage = '多車牌';
+                    }
+                }
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${violation.id}</td>  <!-- 顯示違規事件編號 -->
+                        <td>${violation.license_plate}</td>
+                        <td>${violation.location}</td>
+                        <td>${violation.speed_limit}</td>
+                        <td>${violation.current_speed}</td>
+                        <td>${violation.date_time}</td>
+                        <td><img src="${violation.image}" alt="Violation Image" width="100" height="100"></td>
+                        ${tableId !== 'processed-table' ? `<td>${errorMessage}</td>` : ''}
+                        <td>
+                            <button class="edit-btn" onclick="showViolationDetail(${violation.id})">編輯</button>
+                        </td>
+                    `;
+                tbody.appendChild(row);
+            });
+        }
+
+
+
+
+        function showViolationDetail(id) {
+            const violation = violations.find(v => v.id === id);
+            if (violation) {
+                // 隱藏所有表格
+                document.getElementById('overview-table').style.display = 'none';
+                document.getElementById('processed-table').style.display = 'none';
+                document.getElementById('pending-table').style.display = 'none';
+
+                // 顯示詳細視圖
+                document.getElementById('detail-view').style.display = 'flex';
+
+                updateDetailView(violation);
+            }
+        }
+
+        // 更新詳細資料視圖
+        function updateDetailView(violation) {
+            if (!violation) {
+                console.error("未接收到違規資料");
+                return;
+            }
+
+            // 更新詳細資料視圖
+            document.querySelector('.license-data').textContent = violation.license_plate;
+            document.querySelector('.addr-data').textContent = violation.location;
+            document.querySelector('.speed-data').textContent = violation.speed_limit;
+            document.querySelector('.current-speed-data').textContent = violation.current_speed;
+            document.querySelector('.time-data').textContent = violation.date_time;
+            document.querySelector('.photo').innerHTML = `
+        <img src="${violation.image}" alt="Violation Image" style="object-fit: contain;">
+    `;
+
+            // 更新車牌輸入框和提交按鈕
+            const editCell = document.querySelector('#violations-table tr:nth-last-child(2) td');
+            editCell.innerHTML = `
+        <input type="text" id="new-license-${violation.id}" value="${violation.license_plate}" />
+        <button class='update-btn' onclick="updateLicensePlate(${violation.id})">提交</button>
+    `;
+
+            // 更新「無法辨識」按鈕
+            const unrecognizableBtn = document.querySelector('.unrecognizable-btn');
+            if (unrecognizableBtn) {
+                unrecognizableBtn.onclick = () => markAsUnrecognizable(violation.id);
+            }
+        }
+
+        // 添加返回函數
+        function backToList() {
+            // 隱藏詳細視圖
+            document.getElementById('detail-view').style.display = 'none';
+
+            // 根據當前視圖顯示對應的表格
+            if (currentView === 'overview') {
+                document.getElementById('overview-table').style.display = 'table';
+            } else if (currentView === 'processed') {
+                document.getElementById('processed-table').style.display = 'table';
+            } else if (currentView === 'pending') {
+                document.getElementById('pending-table').style.display = 'table';
+            } else if (currentView === 'history') {
+                document.getElementById('history-table').style.display = 'table';
+            }
+        }
+
+        // 更新車牌號碼的函數
+        function updateLicensePlate(id) {
+            const newLicense = document.getElementById(`new-license-${id}`).value;
+            const userId = "{{ user_id }}";
+
+            if (!newLicense) {
+                alert("請輸入新的車牌號碼！");
+                return;
+            }
+
+            fetch(`/api/manual/update/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ license_plate: newLicense, user_id: userId, error_code: 0 }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('車牌號碼已更新');
+                        location.reload();  // 刷新頁面來顯示更新後的資料
+                    } else {
+                        alert('更新失敗');
+                    }
+                })
+                .catch(error => console.error('Error updating license plate:', error));
+        }
+
+
+        // 無法辨識的處理
+        function markAsUnrecognizable(id) {
+            const userId = "{{ user_id }}";
+
+            fetch(`/api/manual/update/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    license_plate: "無法辨識", // 改為固定文字
+                    user_id: userId,
+                    error_code: 4
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('已標註為無法辨識');
+                        loadOverviewData();
+                        document.querySelector('button[onclick="showView(\'overview\')"]').click();
+                    } else {
+                        alert('無法更新資料');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating error code:', error);
+                    alert('更新錯誤，請稍後再試');
+                });
+        }
+        // 初始載入總覽資料
+        loadOverviewData();
+    </script>
+</body>
+
+</html>

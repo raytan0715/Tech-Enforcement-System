@@ -1,0 +1,232 @@
+/* 通用樣式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #2C3E50, #4CA1AF); /* 深沉漸層背景 */
+    color: #333;
+}
+
+/* 標題區 */
+header {
+    text-align: center;
+    background-color: #34495E; /* 深藍色背景 */
+    color: white;
+    padding: 20px 0;
+}
+
+h1 {
+    font-size: 2.8rem;
+    padding: 15px 0;
+    font-weight: bolder;
+    color: #f5f5f5; /* 柔和的白色字體 */
+}
+
+/* 登出按鈕 */
+.logout-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    background-color: #E74C3C;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.logout-btn:hover {
+    background-color: #C0392B;
+    transform: scale(1.1);
+}
+
+/* 頂部導航 */
+nav {
+    background-color: #2C3E50;
+    padding: 15px 0;
+    text-align: center;
+}
+
+nav button {
+    padding: 10px 20px;
+    margin: 0 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: none;
+    background: none;
+    color: #f5f5f5;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    border-radius: 20px;
+}
+
+nav button.active {
+    color: #FFD700; /* 黃金色，突出當前選中按鈕 */
+    font-weight: bold;
+}
+
+nav button:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* 統一表格樣式 */
+table {
+    width: 95%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table th,
+table td {
+    padding: 15px 20px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    color: #555;
+    font-size: 1rem;
+}
+
+table th {
+    background-color: #2C3E50; /* 深色表頭 */
+    color: white;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* 按鈕樣式 */
+button {
+    font-size: 1rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.edit-btn {
+    background-color: #0511b2;
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #656eeb;
+}
+
+.back-btn {
+    background-color: #ee3e3e;
+    color: white;
+}
+
+.back-btn:hover {
+    background-color: #ff0000;
+}
+
+.update-btn {
+    background-color: #28a745; /* 更柔和且現代的綠色 */
+    color: white;
+    margin-left: 20px;
+
+}
+
+.update-btn:hover {
+    background-color: #218838; /* 深綠色，讓懸停時更明顯 */
+}
+
+.unrecognizable-btn {
+    background-color: #f39c12; /* 鮮明且溫暖的黃色 */
+    color: white;
+    margin-left: 20px;
+}
+
+.unrecognizable-btn:hover {
+    background-color: #e67e22; /* 略深的橙黃色，讓懸停時更顯眼 */
+}
+
+
+/* 已處理、未處理狀態 */
+.status-pending {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.status-processed {
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* 表格列顯示狀態 */
+table tr td.status-pending {
+    color: #dc3545;
+}
+
+table tr td.status-processed {
+    color: #28a745;
+}
+
+/* 已處理的頁面背景顏色 */
+#processed-table {
+    background-color: #d4edda;  /* 綠色 */
+}
+
+/* 未處理的頁面背景顏色 */
+#pending-table {
+    background-color: #f8d7da;  /* 紅色 */
+}
+
+/* 其他樣式保持不變 */
+.processed-row {
+    background-color: #d4edda; /* 綠色 */
+}
+
+.pending-row {
+    background-color: #f8d7da; /* 紅色 */
+}
+
+
+/* 編輯頁面圖片樣式 */
+#violations-table{
+    width: 50%;
+}
+
+
+
+.photo {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-left: 80px;
+}
+
+.photo img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+
+/* 響應式設計 */
+@media (max-width: 800px) {
+    nav button {
+        font-size: 1rem;
+        padding: 8px 15px;
+        margin: 5px;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台北市政府警察局舉發違反道路交通管理事件單</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="ticket">
+        <div class="header">台北市政府警察局舉發違反道路交通管理事件單</div>
+
+        <!-- 顯示圖片：確保圖片放在標題下方 -->
+        <div class="image-section">
+            {% if image_base64 %}
+                <img src="data:image/png;base64,{{ image_base64 }}" alt="Violation Image" class="violation-image" />
+            {% else %}
+                <p>圖片未找到</p>
+            {% endif %}
+        </div>
+
+        <!-- 罰單資訊 -->
+        <div class="ticket-info">
+            <div class="section">
+                <span class="left">駕駛人姓名：</span><span class="right">{{ owner_name }}</span>
+            </div>
+            <div class="section">
+                <span class="left">車牌號碼：</span><span class="right">{{ license_plate }}</span>
+            </div>
+            <div class="section">
+                <span class="left">違規事實：</span><span class="right">{{ violation_details }}</span>
+            </div>
+            <div class="section">
+                <span class="left">違規時間：</span><span class="right">{{ violation_time }}</span>
+            </div>
+            <div class="section">
+                <span class="left">罰單編號：</span><span class="right">{{ ticket_number }}</span>
+            </div>
+            <div class="section">
+                <span class="left">罰款金額：</span><span class="right">{{ fine_amount }}元</span>
+            </div>
+            <div class="section">
+                <span class="left">繳款期限：</span><span class="right">{{ payment_due_date }}</span>
+            </div>
+        </div>
+
+        <!-- 註明 -->
+        <div class="note">
+            <p>請至指定地點繳納罰款。繳納後應保存收據。</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開單系統</title>
+    <link rel="stylesheet" href="/static/css/openfine.css">
+</head>
+
+<body>
+    <header>
+        <h1>開單系統</h1>
+        <div class="logout-button">
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button class="logout-btn" type="submit">登出</button>
+            </form>
+        </div>
+    </header>
+
+    <nav>
+        <button onclick="showView('overview')" class="active">總覽</button>
+        <button onclick="showView('processed')">已處理</button>
+        <button onclick="showView('pending')">未處理</button>
+        <button onclick="showView('error')">車籍錯誤</button>
+        <button onclick="showView('print-log')">開單紀錄</button>
+    </nav>
+
+    <div class="content-area">
+        <!-- 總覽表格 -->
+        <table id="overview-table">
+            <thead>
+                <tr>
+                    <th>罰單編號</th>
+                    <th>車牌號碼</th>
+                    <th>位置</th>
+                    <th>限速</th>
+                    <th>當前速度</th>
+                    <th>日期與時間</th>
+                    <th>照片</th>
+                    <th>狀態</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <!-- 已處理表格 -->
+        <table id="processed-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>罰單編號</th>
+                    <th>車牌號碼</th>
+                    <th>位置</th>
+                    <th>限速</th>
+                    <th>當前速度</th>
+                    <th>日期與時間</th>
+                    <th>照片</th>
+                    <th>狀態</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <!-- 未處理表格 -->
+        <table id="pending-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>罰單編號</th>
+                    <th>車牌號碼</th>
+                    <th>位置</th>
+                    <th>限速</th>
+                    <th>當前速度</th>
+                    <th>日期與時間</th>
+                    <th>照片</th>
+                    <th>狀態</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <!-- 車籍錯誤表格 -->
+        <table id="error-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>罰單編號</th>
+                    <th>車牌號碼</th>
+                    <th>位置</th>
+                    <th>限速</th>
+                    <th>當前速度</th>
+                    <th>日期與時間</th>
+                    <th>照片</th>
+                    <th>狀態</th>
+                    <th>錯誤資訊</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <!-- 列印紀錄表格 -->
+        <table id="print-log-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>列印紀錄 ID</th>
+                    <th>罰單編號</th>
+                    <th>列印員工 ID</th>
+                    <th>列印時間</th>
+                    <th>IP 位址</th>
+                    <th>車輛照片</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let currentView = 'overview';
+        let violations = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelector('button[onclick="showView(\'overview\')"]').classList.add('active');
+            document.getElementById('overview-table').style.display = 'table';
+            loadTicketData();
+        });
+
+        function showView(view) {
+            currentView = view;
+
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`button[onclick="showView('${view}')"]`).classList.add('active');
+
+            document.getElementById('overview-table').style.display = 'none';
+            document.getElementById('processed-table').style.display = 'none';
+            document.getElementById('pending-table').style.display = 'none';
+            document.getElementById('error-table').style.display = 'none';
+            document.getElementById('print-log-table').style.display = 'none';
+
+            if (view === 'overview') {
+                document.getElementById('overview-table').style.display = 'table';
+            } else if (view === 'processed') {
+                document.getElementById('processed-table').style.display = 'table';
+            } else if (view === 'pending') {
+                document.getElementById('pending-table').style.display = 'table';
+            } else if (view === 'error') {
+                document.getElementById('error-table').style.display = 'table';
+            } else if (view === 'print-log') {
+                document.getElementById('print-log-table').style.display = 'table';
+                loadPrintLogs();
+            }
+
+            loadTicketData();
+        }
+
+        function loadPrintLogs() {
+            fetch('/api/fines_log')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('table-body');
+                    tableBody.innerHTML = '';
+                    data.forEach(log => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${log.log_id}</td>
+                            <td>${log.ticket_id}</td>
+                            <td>${log.printed_by}</td>
+                            <td>${new Date(log.print_time).toLocaleString()}</td>
+                            <td>${log.ip_address}</td>
+                            <td><img src="data:image/jpeg;base64,${log.printed_image}" alt="Violation Image" width="100" height="100"></td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading print logs:', error);
+                });
+        }
+
+        function loadTicketData() {
+            fetch('/api/tk')
+                .then(response => response.json())
+                .then(data => {
+                    violations = data;
+                    updateView();
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function updateView() {
+            const tables = {
+                overview: document.querySelector('#overview-table tbody'),
+                processed: document.querySelector('#processed-table tbody'),
+                pending: document.querySelector('#pending-table tbody'),
+                error: document.querySelector('#error-table tbody'),
+            };
+
+            Object.values(tables).forEach(tbody => (tbody.innerHTML = ''));
+
+            violations.forEach(fine => {
+                const row = document.createElement('tr');
+                // 更新狀態樣式邏輯
+                if (fine.ticket === 1 || fine.ticket === 2) {  // 修改這裡，將 ticket=2 也加入已處理樣式
+                    row.classList.add('status-processed');
+                } else if (fine.ticket === 0 && fine.error_code === 0) {
+                    row.classList.add('status-pending');
+                } else if (fine.ticket === 0 && [1, 2].includes(fine.error_code)) {  // 修改這裡，只在 ticket=0 時顯示錯誤樣式
+                    row.classList.add('status-error');
+                }
+
+                let errorMessage = '';
+                if (fine.error_code === 1) {
+                    errorMessage = '無車籍';
+                } else if (fine.error_code === 2) {
+                    errorMessage = '已註銷';
+                }
+
+                function getStatus(fine) {
+                    if (fine.ticket === 1) return '已處理';
+                    if (fine.ticket === 2) return '已回報';
+                    if (fine.ticket === 0 && fine.error_code === 0) return '未處理';
+                    return '車籍錯誤';
+                }
+
+                function getActionButton(fine) {
+                    if ((fine.ticket === 0 || fine.ticket === 2) && fine.error_code !== 0) {  // 修改這裡，ticket 0 或 2 且 error_code 不為 0 顯示回報按鈕
+                        return `<button class="call-btn" onclick="reportToDepartment('${fine.violation_id}')">回報</button>`;
+                    } else {
+                        return `<button class="edit-btn" onclick="downloadTicket('${fine.violation_id}')">開單</button>`;
+                    }
+                }
+
+                // 根據視圖動態生成欄位
+                if (currentView === 'error') {
+                    row.innerHTML = `
+                        <td>${fine.violation_id}</td>
+                        <td>${fine.license_plate}</td>
+                        <td>${fine.violation_location}</td>
+                        <td>${fine.speed_limit}</td>
+                        <td>${fine.actual_speed}</td>
+                        <td>${fine.violation_time}</td>
+                        <td><img src="${fine.vehicle_image}" alt="Violation Image" width="100" height="100"></td>
+                        <td>${getStatus(fine)}</td>
+                        <td>${errorMessage}</td>
+                        <td>${getActionButton(fine)}</td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td>${fine.violation_id}</td>
+                        <td>${fine.license_plate}</td>
+                        <td>${fine.violation_location}</td>
+                        <td>${fine.speed_limit}</td>
+                        <td>${fine.actual_speed}</td>
+                        <td>${fine.violation_time}</td>
+                        <td><img src="${fine.vehicle_image}" alt="Violation Image" width="100" height="100"></td>
+                        <td>${getStatus(fine)}</td>
+                        <td>${getActionButton(fine)}</td>
+                    `;
+                }
+
+                // 修改分頁顯示條件
+                if (currentView === 'processed' && (fine.ticket === 1 || fine.ticket === 2)) {  // 修改這裡，將 ticket=2 加入已處理頁面
+                    tables.processed.appendChild(row);
+                } else if (currentView === 'pending' && fine.ticket === 0 && fine.error_code === 0) {
+                    tables.pending.appendChild(row);
+                } else if (currentView === 'error' && fine.ticket === 0 && [1, 2].includes(fine.error_code)) {  // 修改這裡，只在 ticket=0 時顯示在錯誤頁面
+                    tables.error.appendChild(row);
+                } else if (currentView === 'overview') {
+                    tables.overview.appendChild(row);
+                }
+            });
+        }
+
+        function reportToDepartment(id) {
+            const subject = `車籍錯誤報告 - 罰單編號 ${id}`;
+            const body = `尊敬的交通部，\n\n請注意以下罰單存在車籍錯誤，請協助處理：\n\n罰單編號：${id}\n\n謝謝！`;
+
+            window.location.href = `mailto:traffic@moe.gov.tw?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+            fetch('/api/update_report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    violation_id: id,
+                    ticket: 2
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to update violation record.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Violation updated successfully:', data);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error updating violation:', error);
+                });
+        }
+
+        function downloadTicket(id) {
+            fetch(`/ticket/${id}`, { method: 'GET' })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ticket_${id}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error downloading ticket:', error);
+                    alert('下載票單失敗，請稍後再試。');
+                });
+        }
+    </script>
+</body>
+
+</html>

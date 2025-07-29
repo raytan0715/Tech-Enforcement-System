@@ -1,0 +1,16 @@
+sqlalchemy
+pymysql
+python-decouple
+python-multipart
+flask 
+flask_sqlalchemy
+easyocr
+opencv-python
+ultralytics
+
+
+改資料庫密碼1234
+database.py
+settings.py
+manual_review.py
+main.py
